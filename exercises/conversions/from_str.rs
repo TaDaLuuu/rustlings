@@ -2,16 +2,13 @@
 // Additionally, upon implementing FromStr, you can use the `parse` method
 // on strings to generate an object of the implementor type.
 // You can read more about it at https://doc.rust-lang.org/std/str/trait.FromStr.html
-use std::error;
-use std::str::FromStr;
+use std::{error, str::FromStr, fmt};
 
 #[derive(Debug)]
 struct Person {
     name: String,
     age: usize,
 }
-
-// I AM NOT DONE
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -20,12 +17,32 @@ struct Person {
 // 4. Extract the first element from the split operation and use it as the name
 // 5. Extract the other element from the split operation and parse it into a `usize` as the age
 //    with something like `"4".parse::<usize>()`
-// 6. If while extracting the name and the age something goes wrong, an error should be returned
+// 5. If while extracting the name and the age something goes wrong, an error should be returned
 // If everything goes well, then return a Result of a Person object
+
+#[derive(Debug, Clone)]
+struct InvalidInput;
+
+impl fmt::Display for InvalidInput {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Could not parse input.")
+    }
+}
+
+impl error::Error for InvalidInput {}
 
 impl FromStr for Person {
     type Err = Box<dyn error::Error>;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        let v: Vec<&str> = s.split(',').collect();
+        if v.len() != 2 || v[0].is_empty() {
+            Err(Box::new(InvalidInput))
+        } else {
+            Ok(Person {
+                name: v[0].to_string(),
+                age: v[1].parse::<usize>()?
+            })
+        }
     }
 }
 
